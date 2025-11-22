@@ -943,7 +943,7 @@ Please click on Settings to allow permission for Storage. Without this permissio
     <string name="common_word_collection">Collection</string>
     <string name="common_word_component">Component</string>
     <string name="common_word_continue">Continue</string>
-    <string name="common_word_contributor">Contributor</string>
+    <string name="common_word_contributor">User</string>
     <string name="common_word_copy">Copy</string>
     <string name="common_word_create">Create</string>
     <string name="common_word_custom_view">Custom View</string>

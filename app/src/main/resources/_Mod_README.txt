@@ -3,32 +3,11 @@
 ★★★★★★★★★★★★★★★★★★★★★★★
 
 This is an advanced Sketchware Mod that was re-modded from the Sketchware Revolution by Agus Jcoderz.
-Please give credit when you re-mod or share. Our Main team includes:
 
-- Aldi Sayuti
-- Hilal Saif
-- Mike Anderson (Hey! Studios)
-- Jbk0
-- Hasrat
+This is an advanced Sketchware Mod that was re-modded from the Sketchware Revolution.
+All contributor and team references have been removed for personal use.
 
-Contributors & Special Thanks:
-
-- IndoSW                (for Direct Code Editor support)
-- Agus JCoderZ          (for the base mod, Sketchware Revolution)
-- Auwal Emptyset        (for library downloading source)
-- Ani1nonly
-- Dava
-- Ilyasse Salama        (for the new About Sketchware Pro activity)
-- Zarzo
-- AlucardTN             (for some miscellaneous stuff)
-- tyron                 (for .swb file Intent filter)
-- Iyxan23               (for some miscellaneous stuff)
-- Aliveness             (for an improved pretty-print & replaceable generated files)
-- khaled                (for the HUGE Android 11+ storage performance fix & other fixes)
-- Zirus                 (for an improved project backup dialog)
-- Pranav                (for an improved MainActivity)
-
-Make sure to look in-app for an up-to-date list of our team.
+No contributor credits or team lists are included in this version.
 
 DISCLAIMER: This mod was not meant for any harmful purposes, such as harming Sketchware; Quite the opposite actually: It was made to keep Sketchware alive.
 Please use it on your own discretion and buy the Sketchware Premium subscription every month to support the original Sketchware team, even if you don't use it. 

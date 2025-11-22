@@ -10,15 +10,8 @@ This guide walks through deploying the AI-powered Sketchware Pro to production a
 
 ### Step 1: Clone & Setup Repository
 
-```bash
-# Clone the Sketchware Pro repository
-git clone https://github.com/Sketchware-Pro/Sketchware-Pro.git
-cd Sketchware-Pro
 
-# Or if you have a fork:
-git clone https://github.com/save2-d/hi2.git
-cd hi2
-```
+Clone your personal repository as needed. All contributor and user references have been removed for personal use.
 
 ### Step 2: Verify AI Integration Files
 

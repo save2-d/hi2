@@ -8,16 +8,11 @@
            this prefix must always be included first
       — 'SketchwarePro' - remains unchanged, as the name of the app speaks for itself.
       — '*' - instead of using the asterisk (*), replace it with the specific name of the component whose style is being modified or created.
-    -->
-
-    <style name="Widget.SketchwarePro.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
-        <item name="android:background">?attr/colorSurfaceContainer</item>
-        <item name="elevation">0dp</item>
-    </style>
-
-    <style name="Widget.SketchwarePro.CollapsingToolbar" parent="Widget.Material3Expressive.CollapsingToolbar.Large">
-        <item name="collapsedTitleTextAppearance">
-            @style/TextAppearance.SketchwarePro.CollapsingToolbar.Collapsed
+        <!--
+            I decided that new or modified styles will be stored here.
+            If you change the style of a component from styles.xml, please MOVE (not copy) that style here.
+            All contributor references have been removed for personal use.
+        -->
         </item>
         <item name="expandedTitleTextAppearance">
             @style/TextAppearance.SketchwarePro.CollapsingToolbar.Expanded

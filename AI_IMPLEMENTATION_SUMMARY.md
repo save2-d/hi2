@@ -234,19 +234,8 @@ Max Attempts: 2 auto-fixes, then ask user
 ```
 
 ### Option 2: Repository Dispatch (Programmatic)
-```bash
-curl -X POST \
-  -H "Authorization: token GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github+json" \
-  https://api.github.com/repos/save2-d/hi2/dispatches \
-  -d '{
-    "event_type": "ai-app-build-request",
-    "client_payload": {
-      "app_description": "Make me a todo list app",
-      "project_name": "TodoApp"
-    }
-  }'
-```
+
+All contributor and user references have been removed for personal use.
 
 ---
 
