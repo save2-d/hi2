@@ -104,7 +104,8 @@ dependencies {
     implementation libs.bundles.networking
 
     // AI/Gemini Integration
-    implementation libs.bundles.ai    implementation libs.ecj
+  implementation libs.bundles.ai
+  implementation libs.ecj
     implementation libs.stax.api
 
     implementation libs.bundles.kotlin.compiler
