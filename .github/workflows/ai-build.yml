@@ -1,0 +1,183 @@
+name: AI-Powered APK Generation
+
+on:
+  repository_dispatch:
+    types: [ai-app-build-request]
+  workflow_dispatch:
+    inputs:
+      app_description:
+        description: 'Describe the app you want to build (e.g., "Make me a browser")'
+        required: true
+        type: string
+      project_name:
+        description: 'Project name for the app'
+        required: true
+        type: string
+
+jobs:
+  ai-generate-and-build:
+    name: Generate App with AI & Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # 2 hours max for complex app generation and build
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Validate Gemini API Keys
+        run: |
+          GEMINI_PRIMARY_KEY="${{ secrets.GEMINI_PRIMARY_API_KEY }}"
+          GEMINI_BACKUP_KEY="${{ secrets.GEMINI_BACKUP_API_KEY }}"
+          if [ -z "$GEMINI_PRIMARY_KEY" ]; then
+            echo "ERROR: GEMINI_PRIMARY_API_KEY secret not configured"
+            exit 1
+          fi
+          echo "✓ Primary API key configured"
+          if [ -n "$GEMINI_BACKUP_KEY" ]; then
+            echo "✓ Backup API key configured"
+          else
+            echo "⚠ No backup API key configured (failover will not work)"
+          fi
+
+      - name: Download AI Generation Cache
+        uses: actions/cache@v3
+        with:
+          path: .ai-cache
+          key: ai-cache-${{ github.run_id }}
+          restore-keys: ai-cache-
+
+      - name: Generate App with Gemini AI
+        env:
+          GEMINI_PRIMARY_KEY: ${{ secrets.GEMINI_PRIMARY_API_KEY }}
+          GEMINI_BACKUP_KEY: ${{ secrets.GEMINI_BACKUP_API_KEY }}
+          APP_DESCRIPTION: ${{ github.event.inputs.app_description || github.event.client_payload.app_description }}
+          PROJECT_NAME: ${{ github.event.inputs.project_name || github.event.client_payload.project_name }}
+          AI_MODE: true
+        run: |
+          echo "🤖 Starting AI app generation..."
+          echo "App Description: $APP_DESCRIPTION"
+          echo "Project Name: $PROJECT_NAME"
+          
+          # Build with AI mode enabled
+          ./gradlew -PaiMode=true \
+                    -PappDescription="$APP_DESCRIPTION" \
+                    -PprojectName="$PROJECT_NAME" \
+                    -PgeminiPrimaryKey="$GEMINI_PRIMARY_KEY" \
+                    -PgeminiBackupKey="$GEMINI_BACKUP_KEY" \
+                    generateAiApp
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ AI generation failed"
+            exit 1
+          fi
+          echo "✓ AI app generation completed"
+
+      - name: Build Release APK
+        env:
+          SKETCHUB_API_KEY: ${{ secrets.SKETCHUB_API_KEY }}
+        run: |
+          echo "🔨 Building APK..."
+          ./gradlew assembleRelease
+          
+          if [ $? -ne 0 ]; then
+            echo "❌ Build failed, attempting auto-fix..."
+            ./gradlew -PaiMode=true fixBuildErrors assembleRelease
+          fi
+
+      - name: Set Commit Hash
+        id: set_sha
+        run: echo "short_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Rename APK with Project Name
+        run: |
+          PROJECT_NAME="${{ github.event.inputs.project_name || github.event.client_payload.project_name }}"
+          if [ -z "$PROJECT_NAME" ]; then
+            PROJECT_NAME="ai-app"
+          fi
+          
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/${PROJECT_NAME}-${{ steps.set_sha.outputs.short_sha }}.apk
+
+      - name: Upload Generated APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-app-${{ github.event.inputs.project_name || 'generated' }}-${{ steps.set_sha.outputs.short_sha }}
+          path: app/build/outputs/apk/release/
+          retention-days: 30
+
+      - name: Generate Build Report
+        if: always()
+        run: |
+          echo "# AI App Build Report" > build_report.md
+          echo "" >> build_report.md
+          echo "**App Description:** ${{ github.event.inputs.app_description || github.event.client_payload.app_description }}" >> build_report.md
+          echo "**Project Name:** ${{ github.event.inputs.project_name || github.event.client_payload.project_name }}" >> build_report.md
+          echo "**Build Time:** $(date)" >> build_report.md
+          echo "**Commit:** ${{ github.sha }}" >> build_report.md
+          echo "**Status:** ${{ job.status }}" >> build_report.md
+          
+          if [ -f build-errors.log ]; then
+            echo "" >> build_report.md
+            echo "## Build Errors" >> build_report.md
+            echo "\`\`\`" >> build_report.md
+            cat build-errors.log >> build_report.md
+            echo "\`\`\`" >> build_report.md
+          fi
+
+      - name: Upload Build Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-report-${{ steps.set_sha.outputs.short_sha }}
+          path: build_report.md
+
+      - name: Notify Build Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ AI-generated app built successfully!"
+            echo "📱 APK is ready for download"
+          else
+            echo "❌ Build failed"
+            echo "⚠️ Check logs for details"
+          fi
+
+  deploy:
+    name: Deploy to Release (Optional)
+    runs-on: ubuntu-latest
+    needs: ai-generate-and-build
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-app-${{ github.event.inputs.project_name || 'generated' }}-*
+          path: ./artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./artifacts/**/*.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup Old Artifacts
+        uses: geekyeggo/delete-artifact@v4
+        with:
+          name: ai-app-*-*
+          failOnError: false
